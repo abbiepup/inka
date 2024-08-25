@@ -158,6 +158,10 @@ mod linux {
 
         let len = { 0 };
 
-        Program { base, len, sections: Vec::new() }
+        Program {
+            base,
+            len,
+            sections: Vec::new(),
+        }
     }
 }
