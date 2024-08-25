@@ -1,6 +1,7 @@
 use core::ops::Index;
 use core::slice::{from_raw_parts, SliceIndex};
 use std::sync::LazyLock;
+use crate::Base;
 
 static PROGRAM: LazyLock<Program> = LazyLock::new(Program::init);
 
@@ -17,8 +18,8 @@ pub struct Program {
 impl Program {
     /// Returns a raw pointer to this programs base.
     #[inline]
-    pub fn base(&self) -> *const u8 {
-        self.base.0
+    pub fn as_ptr(&self) -> *const u8 {
+        self.base.ptr
     }
 
     /// Returns the length of this program in memory.
@@ -31,7 +32,7 @@ impl Program {
     /// Returns a slice containing the entire program.
     #[inline]
     pub fn as_slice(&self) -> &[u8] {
-        unsafe { from_raw_parts(self.base.0, self.len) }
+        unsafe { from_raw_parts(self.base.ptr, self.len) }
     }
 
     fn init() -> Self {
@@ -56,11 +57,6 @@ impl<I: SliceIndex<[u8]>> Index<I> for Program {
     }
 }
 
-#[derive(Debug)]
-struct Base(*const u8);
-unsafe impl Sync for Base {}
-unsafe impl Send for Base {}
-
 #[cfg(target_os = "windows")]
 mod windows {
     use super::{Base, Program};
@@ -71,12 +67,13 @@ mod windows {
     use windows::Win32::System::{LibraryLoader::GetModuleHandleW, Threading::GetCurrentProcess};
 
     pub(crate) fn init() -> Program {
-        let base =
-            Base(unsafe { GetModuleHandleW(PCWSTR::null()).unwrap_unchecked().0 as *const u8 });
+        let base = Base {
+            ptr: unsafe { GetModuleHandleW(PCWSTR::null()).unwrap_unchecked().0 as *const u8 },
+        };
 
         let len = {
             let process = unsafe { GetCurrentProcess() };
-            let module = HMODULE(base.0.cast_mut().cast());
+            let module = HMODULE(base.ptr.cast_mut().cast());
 
             let mut info = unsafe { zeroed() };
 
@@ -104,7 +101,9 @@ mod linux {
             let dummy_address = unsafe { getauxval(AT_PHDR) as *const usize };
             unsafe { dladdr(dummy_address.cast(), &mut info) };
 
-            Base(info.dli_fbase as *const u8)
+            Base {
+                ptr: info.dli_fbase as *const u8,
+            }
         };
 
         let len = { 0 };
