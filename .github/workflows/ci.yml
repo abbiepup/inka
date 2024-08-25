@@ -1,7 +1,6 @@
 name: CI
 on: [push, pull_request]
 jobs:
-
   rustfmt:
     runs-on: ubuntu-latest
     steps:
@@ -34,16 +33,54 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/cache/restore@v4
+        id: restore
+        with:
+          path: |
+            ~/.rustup/toolchains
+            ~/.rustup/update-hashes
+            ~/.rustup/settings.toml
+          key: toolchain-${{ runner.os }}
       - uses: dtolnay/rust-toolchain@stable
+        if: ${{ steps.restore.outputs.cache-hit != 'true' }}
+        id: toolchain
         with:
           components: "clippy"
+      - uses: actions/cache/save@v4
+        if: ${{ github.ref == 'refs/heads/main' && steps.restore.outputs.cache-hit != 'true' }}
+        id: save
+        with:
+          path: |
+            ~/.rustup/toolchains
+            ~/.rustup/update-hashes
+            ~/.rustup/settings.toml
+          key: toolchain-${{ runner.os }}
       - run: cargo clippy --all-targets --all-features -- -D warnings
 
   check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/cache/restore@v4
+        id: restore
+        with:
+          path: |
+            ~/.rustup/toolchains
+            ~/.rustup/update-hashes
+            ~/.rustup/settings.toml
+          key: toolchain-${{ runner.os }}
       - uses: dtolnay/rust-toolchain@stable
+        if: ${{ steps.restore.outputs.cache-hit != 'true' }}
+        id: toolchain
+      - uses: actions/cache/save@v4
+        if: ${{ github.ref == 'refs/heads/main' && steps.restore.outputs.cache-hit != 'true' }}
+        id: save
+        with:
+          path: |
+            ~/.rustup/toolchains
+            ~/.rustup/update-hashes
+            ~/.rustup/settings.toml
+          key: toolchain-${{ runner.os }}
       - run: cargo check --workspace --all-targets --all-features -v
 
   test:
