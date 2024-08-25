@@ -25,7 +25,7 @@ jobs:
             ~/.rustup/toolchains
             ~/.rustup/update-hashes
             ~/.rustup/settings.toml
-          key: toolchain-${{ runner.os }}-stable
+          key: toolchain-${{ runner.name }}-stable
       - run: cargo fmt --all --check
   clippy:
     runs-on: ubuntu-latest
