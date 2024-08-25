@@ -6,7 +6,7 @@ use std::sync::LazyLock;
 static PROGRAM: LazyLock<Program> = LazyLock::new(Program::init);
 
 pub fn program() -> &'static Program {
-    &*PROGRAM
+    &PROGRAM
 }
 
 #[derive(Debug)]
@@ -24,6 +24,7 @@ impl Program {
 
     /// Returns the length of this program in memory.
     #[inline]
+    #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> usize {
         self.len
     }
