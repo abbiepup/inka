@@ -1,6 +1,5 @@
 use core::ops::Index;
-use core::slice::from_raw_parts;
-use core::slice::SliceIndex;
+use core::slice::{from_raw_parts, SliceIndex};
 use std::sync::LazyLock;
 
 static PROGRAM: LazyLock<Program> = LazyLock::new(Program::init);
