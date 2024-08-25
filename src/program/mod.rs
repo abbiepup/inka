@@ -46,10 +46,10 @@ impl Program {
             windows::init()
         }
 
-        // #[cfg(target_os = "linux")]
-        // {
-        //     linux::init()
-        // }
+        #[cfg(target_os = "linux")]
+        {
+            linux::init()
+        }
     }
 }
 
@@ -139,25 +139,25 @@ mod windows {
     }
 }
 
-// #[cfg(target_os = "linux")]
-// mod linux {
-//     use super::{Base, Program};
-//     use core::mem::zeroed;
-//     use libc::{dladdr, getauxval, Dl_info, AT_PHDR};
+#[cfg(target_os = "linux")]
+mod linux {
+    use super::{Base, Program};
+    use core::mem::zeroed;
+    use libc::{dladdr, getauxval, Dl_info, AT_PHDR};
 
-//     pub(crate) fn init() -> Program {
-//         let base = {
-//             let mut info: Dl_info = unsafe { zeroed() };
-//             let dummy_address = unsafe { getauxval(AT_PHDR) as *const usize };
-//             unsafe { dladdr(dummy_address.cast(), &mut info) };
+    pub(crate) fn init() -> Program {
+        let base = {
+            let mut info: Dl_info = unsafe { zeroed() };
+            let dummy_address = unsafe { getauxval(AT_PHDR) as *const usize };
+            unsafe { dladdr(dummy_address.cast(), &mut info) };
 
-//             Base {
-//                 ptr: info.dli_fbase as *const u8,
-//             }
-//         };
+            Base {
+                ptr: info.dli_fbase as *const u8,
+            }
+        };
 
-//         let len = { 0 };
+        let len = { 0 };
 
-//         Program { base, len }
-//     }
-// }
+        Program { base, len, sections: Vec::new() }
+    }
+}
