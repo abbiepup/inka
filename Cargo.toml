@@ -11,4 +11,4 @@ windows = { version = "0.58.0", features = [
 ] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
-libc = "0.2.14"
+libc = "0.2.98"
