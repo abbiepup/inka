@@ -1,4 +1,4 @@
-# Inka 
+# Inka
 
 # Contributing
 See [`CONTRIBUTING.md`][CONTRIBUTING] for contributing to the project.
