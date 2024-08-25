@@ -12,7 +12,7 @@ jobs:
             ~/.rustup/toolchains
             ~/.rustup/update-hashes
             ~/.rustup/settings.toml
-          key: toolchain-${{ runner.os }}-stable
+          key: toolchain-${{ runner.name }}-stable
       - uses: dtolnay/rust-toolchain@stable
         id: toolchain
         with:
