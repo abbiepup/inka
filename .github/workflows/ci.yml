@@ -5,9 +5,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/cache/restore@v4
+        id: restore
+        with:
+          path: |
+            ~/.rustup/toolchains
+            ~/.rustup/update-hashes
+            ~/.rustup/settings.toml
+          key: toolchain-${{ runner.os }}-stable
       - uses: dtolnay/rust-toolchain@stable
+        id: toolchain
         with:
           components: "rustfmt"
+      - uses: actions/cache/save@v4
+        if: ${{ github.ref == 'refs/heads/main' }}
+        id: save
+        with:
+          path: |
+            ~/.rustup/toolchains
+            ~/.rustup/update-hashes
+            ~/.rustup/settings.toml
+          key: toolchain-${{ runner.os }}-stable
       - run: cargo fmt --all --check
   clippy:
     runs-on: ubuntu-latest
