@@ -9,6 +9,11 @@ pub struct Section {
 
 impl Section {
     #[inline]
+    pub fn as_ptr(&self) -> *const u8 {
+        self.base.ptr
+    }
+
+    #[inline]
     #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> usize {
         self.len
@@ -18,4 +23,6 @@ impl Section {
     pub fn as_slice(&self) -> &[u8] {
         unsafe { from_raw_parts(self.base.ptr, self.len) }
     }
+
+    fn init() {}
 }
