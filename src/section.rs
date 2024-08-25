@@ -10,6 +10,11 @@ pub struct Section {
 
 impl Section {
     #[inline]
+    pub fn name(&self) -> &'static str {
+        self.name
+    }
+
+    #[inline]
     pub fn as_ptr(&self) -> *const u8 {
         self.base.as_ptr()
     }

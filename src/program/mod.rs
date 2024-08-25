@@ -67,7 +67,6 @@ mod windows {
     use super::{Base, Program};
     use crate::Section;
     use core::mem::zeroed;
-    use std::ffi::CStr;
     use windows::core::PCWSTR;
     use windows::Win32::Foundation::HMODULE;
     use windows::Win32::System::Diagnostics::Debug::{IMAGE_NT_HEADERS64, IMAGE_SECTION_HEADER};
@@ -109,12 +108,14 @@ mod windows {
             (0..nt_headers.FileHeader.NumberOfSections)
                 .map(|index| unsafe { &*section_header_ptr.add(index as usize) })
                 .map(|section| {
-                    let name = unsafe {
+                    let name = {
                         let raw_name = &section.Name;
-                        let name_len = raw_name.iter().position(|&c| c == 0).unwrap_or(raw_name.len());
+                        let name_len = raw_name
+                            .iter()
+                            .position(|&c| c == 0)
+                            .unwrap_or(raw_name.len());
                         std::str::from_utf8(&raw_name[..name_len]).unwrap_or("Invalid UTF-8")
                     };
-                    
 
                     Section {
                         name,
