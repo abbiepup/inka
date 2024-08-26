@@ -67,6 +67,7 @@ mod windows {
     use super::{Base, Program};
     use crate::Section;
     use core::mem::zeroed;
+    use std::ptr::NonNull;
     use windows::core::PCWSTR;
     use windows::Win32::Foundation::HMODULE;
     use windows::Win32::System::Diagnostics::Debug::{IMAGE_NT_HEADERS64, IMAGE_SECTION_HEADER};
@@ -76,12 +77,16 @@ mod windows {
 
     pub(crate) fn init() -> Program {
         let base = Base {
-            ptr: unsafe { GetModuleHandleW(PCWSTR::null()).unwrap_unchecked().0 as *const u8 },
+            ptr: unsafe {
+                NonNull::new_unchecked(
+                    GetModuleHandleW(PCWSTR::null()).unwrap_unchecked().0 as *mut u8,
+                )
+            },
         };
 
         let len = {
             let process = unsafe { GetCurrentProcess() };
-            let module = HMODULE(base.ptr.cast_mut().cast());
+            let module = HMODULE(base.as_ptr().cast_mut().cast());
 
             let mut info = unsafe { zeroed() };
 
@@ -121,8 +126,9 @@ mod windows {
                         name,
                         base: unsafe {
                             Base {
-                                ptr: base.as_ptr().add(section.VirtualAddress as usize)
-                                    as *const u8,
+                                ptr: NonNull::new_unchecked(
+                                    base.as_ptr().add(section.VirtualAddress as usize) as *mut u8,
+                                ),
                             }
                         },
                         len: unsafe { section.Misc.VirtualSize as usize },
