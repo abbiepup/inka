@@ -45,4 +45,8 @@ impl Section {
             .position_last(|window| window == pattern)
             .map(|offset| unsafe { self.as_ptr().add(offset) })
     }
+
+    pub(crate) fn new(name: &'static str, base: Base, len: usize) -> Self {
+        Self { name, base, len }
+    }
 }

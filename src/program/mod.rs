@@ -38,8 +38,16 @@ impl Program {
         unsafe { from_raw_parts(self.base.as_ptr(), self.len) }
     }
 
+    pub fn contains(&self, pattern: &[u8]) -> bool {
+        self.find(pattern).is_some()
+    }
+
     pub fn sections(&self) -> &[Section] {
         &self.sections
+    }
+
+    pub fn get_section(&self, name: &str) -> Option<&Section> {
+        self.sections.iter().find(|section| section.name() == name)
     }
 
     pub fn find(&self, pattern: &[u8]) -> Option<*const u8> {
