@@ -1,5 +1,6 @@
 use crate::{Base, Section};
 use core::ops::Index;
+use core::ptr::NonNull;
 use core::slice::{from_raw_parts, SliceIndex};
 use rayon::iter::IndexedParallelIterator;
 use rayon::slice::ParallelSlice;
@@ -50,18 +51,18 @@ impl Program {
         self.sections.iter().find(|section| section.name() == name)
     }
 
-    pub fn find(&self, pattern: &[u8]) -> Option<*const u8> {
+    pub fn find(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
         self.as_slice()
             .par_windows(pattern.len())
             .position_first(|window| window == pattern)
-            .map(|offset| unsafe { self.as_ptr().add(offset) })
+            .map(|offset| unsafe { self.base.add(offset) })
     }
 
-    pub fn rfind(&self, pattern: &[u8]) -> Option<*const u8> {
+    pub fn rfind(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
         self.as_slice()
             .par_windows(pattern.len())
             .position_last(|window| window == pattern)
-            .map(|offset| unsafe { self.as_ptr().add(offset) })
+            .map(|offset| unsafe { self.base.add(offset) })
     }
 
     fn init() -> Self {

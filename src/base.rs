@@ -13,6 +13,11 @@ impl Base {
     pub fn as_ptr(&self) -> *const u8 {
         self.ptr.as_ptr()
     }
+
+    #[inline]
+    pub unsafe fn add(&self, count: usize) -> NonNull<u8> {
+        unsafe { self.ptr.add(count) }
+    }
 }
 
 impl Debug for Base {
