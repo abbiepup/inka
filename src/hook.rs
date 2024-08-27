@@ -1,8 +1,7 @@
-use core::sync::atomic::{AtomicPtr, Ordering};
 use core::ptr::null_mut;
+use core::sync::atomic::{AtomicPtr, Ordering};
 
 pub trait Hook<F>: Copy {
-
     fn hook(&self) -> HookGuard {
         let self_ptr = self.as_ptr_u8();
 
@@ -44,7 +43,7 @@ where
     fn trampoline(f: F) -> Closure<F> {
         unsafe extern "C" fn thunk<F, R>()
         where
-            F: FnMut(),
+            F: FnMut() + 'static,
         {
             let p = STATIC_CONTEXT.swap(null_mut(), Ordering::Relaxed) as *mut ClosureInner<F>;
             ((*p).data)();
