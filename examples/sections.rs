@@ -2,7 +2,7 @@ use inka::program;
 
 fn main() {
     let program = dbg!(program());
-    let text_base = dbg!(program.get_section(".text").unwrap().base());
+    let text = dbg!(program.get_section(".text").unwrap());
 
-    dbg!(unsafe { text_base.add(1) });
+    dbg!(unsafe { text.add(1) });
 }

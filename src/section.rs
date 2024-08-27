@@ -17,9 +17,8 @@ impl Section {
         self.name
     }
 
-    #[inline]
-    pub fn base(&self) -> Base {
-        self.base
+    pub unsafe fn add(&self, count: usize) -> NonNull<u8> {
+        unsafe { self.base.add(count) }
     }
 
     #[inline]
