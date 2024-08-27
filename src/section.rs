@@ -1,6 +1,7 @@
 use crate::Base;
 use core::ptr::NonNull;
-use core::slice::from_raw_parts;
+use core::slice::{from_raw_parts, SliceIndex};
+use std::ops::Index;
 use rayon::iter::IndexedParallelIterator;
 use rayon::slice::ParallelSlice;
 
@@ -37,6 +38,10 @@ impl Section {
         unsafe { from_raw_parts(self.base.as_ptr(), self.len) }
     }
 
+    pub fn contains(&self, pattern: &[u8]) -> bool {
+        self.find(pattern).is_some()
+    }
+
     pub fn find(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
         self.as_slice()
             .par_windows(pattern.len())
@@ -53,5 +58,14 @@ impl Section {
 
     pub(crate) fn _new(name: &'static str, base: Base, len: usize) -> Self {
         Self { name, base, len }
+    }
+}
+
+impl<I: SliceIndex<[u8]>> Index<I> for Section {
+    type Output = I::Output;
+
+    #[inline]
+    fn index(&self, index: I) -> &Self::Output {
+        self.as_slice().index(index)
     }
 }

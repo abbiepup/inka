@@ -1,5 +1,11 @@
 # Inka
 
+# Platforms
+|  **OS** | **x64** |
+|:-------:|:-------:|
+| Windows |   Yes   |
+|  Linux  | Planned |
+
 # Contributing
 See [`CONTRIBUTING.md`][CONTRIBUTING] for contributing to the project.
 
