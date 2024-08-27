@@ -18,6 +18,11 @@ impl Section {
     }
 
     #[inline]
+    pub fn base(&self) -> Base {
+        self.base
+    }
+
+    #[inline]
     pub fn as_ptr(&self) -> *const u8 {
         self.base.as_ptr()
     }

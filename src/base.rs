@@ -18,6 +18,12 @@ impl Base {
     pub unsafe fn add(&self, count: usize) -> NonNull<u8> {
         unsafe { self.ptr.add(count) }
     }
+
+    pub(crate) unsafe fn _new_unchecked(ptr: *mut u8) -> Self {
+        Self {
+            ptr: unsafe { NonNull::new_unchecked(ptr) },
+        }
+    }
 }
 
 impl Debug for Base {
