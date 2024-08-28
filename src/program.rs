@@ -96,8 +96,12 @@ impl Program {
 
                     unsafe { core::str::from_utf8_unchecked(&raw_name[..name_len]) }
                 };
+                
+                let section_base = unsafe {
+                    Base::new_unchecked(section.VirtualAddress as *mut u8)
+                };
 
-                Section::new(name, base, unsafe { section.Misc.VirtualSize as usize })
+                Section::new(name, section_base, unsafe { section.Misc.VirtualSize as usize })
             })
             .collect();
 
