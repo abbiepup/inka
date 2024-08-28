@@ -19,7 +19,7 @@ impl Base {
         unsafe { self.ptr.add(count) }
     }
 
-    pub(crate) unsafe fn _new_unchecked(ptr: *mut u8) -> Self {
+    pub(crate) unsafe fn new_unchecked(ptr: *mut u8) -> Self {
         Self {
             ptr: unsafe { NonNull::new_unchecked(ptr) },
         }
