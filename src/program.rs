@@ -97,7 +97,7 @@ impl Program {
                     unsafe { core::str::from_utf8_unchecked(&raw_name[..name_len]) }
                 };
 
-                Section::new(name, base, len)
+                Section::new(name, base, unsafe { section.Misc.VirtualSize as usize })
             })
             .collect();
 
