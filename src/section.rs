@@ -1,7 +1,7 @@
 use crate::Base;
 use core::ptr::NonNull;
 use core::slice::{from_raw_parts, SliceIndex};
-use std::ops::Index;
+use core::ops::Index;
 use rayon::iter::IndexedParallelIterator;
 use rayon::slice::ParallelSlice;
 
