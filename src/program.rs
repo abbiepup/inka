@@ -1,4 +1,4 @@
-use crate::{Base, Section};
+use crate::{Base, Section, Symbol};
 use core::ffi::c_char;
 use core::ops::Index;
 use core::ptr::NonNull;
@@ -115,7 +115,7 @@ impl Program {
         }
     }
 
-    fn parse_export_symbols(nt_headers: &IMAGE_NT_HEADERS64, base: Base) {
+    fn parse_export_symbols(nt_headers: &IMAGE_NT_HEADERS64, base: Base) -> HashMap<&str, Symbol> {
         let mut symbols = HashMap::new();
 
         let export_directory_rva = nt_headers.OptionalHeader.DataDirectory[0].VirtualAddress;
@@ -129,10 +129,12 @@ impl Program {
 
         let name_ptrs =
             unsafe { base.add(export_directory.AddressOfNames as usize).as_ptr() } as *const u32;
+
         let func_ptrs = unsafe {
             base.add(export_directory.AddressOfFunctions as usize)
                 .as_ptr()
         } as *const u32;
+
         let ordinals = unsafe {
             base.add(export_directory.AddressOfNameOrdinals as usize)
                 .as_ptr()
@@ -142,17 +144,13 @@ impl Program {
             let name_rva = unsafe { *name_ptrs.add(i as usize) };
             let name_ptr = unsafe { base.add(name_rva as usize).as_ptr() };
             let name = unsafe { std::ffi::CStr::from_ptr(name_ptr as *const c_char) }
-                .to_string_lossy()
-                .into_owned();
-
+                .to_str()
+                .unwrap();
+            
             let ordinal = unsafe { *ordinals.add(i as usize) } + export_directory.Base as u16;
             let func_rva = unsafe { *func_ptrs.add(ordinal as usize) };
 
-            let symbol = ExportSymbol {
-                name: name.clone(),
-                address: func_rva,
-                ordinal,
-            };
+            let symbol = Symbol::new(name, func_rva);
 
             symbols.insert(name, symbol);
         }
