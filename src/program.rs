@@ -23,6 +23,7 @@ pub struct Program {
     base: Base,
     len: usize,
     sections: Vec<Section>,
+    exports: HashMap<&'static str, Symbol>,
 }
 
 impl Program {
@@ -108,10 +109,13 @@ impl Program {
             })
             .collect();
 
+        let exports = Program::parse_export_symbols(nt_headers64, base);
+
         Self {
             base,
             len,
             sections,
+            exports,
         }
     }
 
@@ -146,11 +150,16 @@ impl Program {
             let name = unsafe { std::ffi::CStr::from_ptr(name_ptr as *const c_char) }
                 .to_str()
                 .unwrap();
-            
-            let ordinal = unsafe { *ordinals.add(i as usize) } + export_directory.Base as u16;
-            let func_rva = unsafe { *func_ptrs.add(ordinal as usize) };
 
-            let symbol = Symbol::new(name, func_rva);
+            println!("{}", name);
+            
+            let ordinal = unsafe { *ordinals.add(i as usize) };
+            let func_rva = unsafe { *func_ptrs.add(ordinal as usize) };
+            let func_addr = unsafe { base.add(func_rva as usize) };
+
+            let base = unsafe { Base::new_unchecked(func_addr.as_ptr()) };
+
+            let symbol = Symbol::new(name, base);
 
             symbols.insert(name, symbol);
         }
