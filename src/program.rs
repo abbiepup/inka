@@ -1,16 +1,14 @@
-use crate::{Base, Section, Symbol};
-use core::ffi::c_char;
+use crate::{Base, Section};
 use core::ops::Index;
 use core::ptr::NonNull;
 use core::slice::{from_raw_parts, SliceIndex};
 use rayon::iter::IndexedParallelIterator;
 use rayon::slice::ParallelSlice;
-use std::collections::HashMap;
 use std::sync::LazyLock;
 use windows::core::PCWSTR;
 use windows::Win32::System::Diagnostics::Debug::{IMAGE_NT_HEADERS64, IMAGE_SECTION_HEADER};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
-use windows::Win32::System::SystemServices::{IMAGE_DOS_HEADER, IMAGE_EXPORT_DIRECTORY};
+use windows::Win32::System::SystemServices::IMAGE_DOS_HEADER;
 
 static PROGRAM: LazyLock<Program> = LazyLock::new(Program::init);
 
@@ -23,7 +21,6 @@ pub struct Program {
     base: Base,
     len: usize,
     sections: Vec<Section>,
-    exports: HashMap<&'static str, Symbol>,
 }
 
 impl Program {
@@ -109,62 +106,11 @@ impl Program {
             })
             .collect();
 
-        let exports = Program::parse_export_symbols(nt_headers64, base);
-
         Self {
             base,
             len,
             sections,
-            exports,
         }
-    }
-
-    fn parse_export_symbols(nt_headers: &IMAGE_NT_HEADERS64, base: Base) -> HashMap<&str, Symbol> {
-        let mut symbols = HashMap::new();
-
-        let export_directory_rva = nt_headers.OptionalHeader.DataDirectory[0].VirtualAddress;
-
-        if export_directory_rva == 0 {
-            return symbols;
-        }
-
-        let export_directory: &IMAGE_EXPORT_DIRECTORY =
-            unsafe { &*(base.add(export_directory_rva as usize).as_ptr().cast()) };
-
-        let name_ptrs =
-            unsafe { base.add(export_directory.AddressOfNames as usize).as_ptr() } as *const u32;
-
-        let func_ptrs = unsafe {
-            base.add(export_directory.AddressOfFunctions as usize)
-                .as_ptr()
-        } as *const u32;
-
-        let ordinals = unsafe {
-            base.add(export_directory.AddressOfNameOrdinals as usize)
-                .as_ptr()
-        } as *const u16;
-
-        for i in 0..export_directory.NumberOfNames {
-            let name_rva = unsafe { *name_ptrs.add(i as usize) };
-            let name_ptr = unsafe { base.add(name_rva as usize).as_ptr() };
-            let name = unsafe { std::ffi::CStr::from_ptr(name_ptr as *const c_char) }
-                .to_str()
-                .unwrap();
-
-            println!("{}", name);
-            
-            let ordinal = unsafe { *ordinals.add(i as usize) };
-            let func_rva = unsafe { *func_ptrs.add(ordinal as usize) };
-            let func_addr = unsafe { base.add(func_rva as usize) };
-
-            let base = unsafe { Base::new_unchecked(func_addr.as_ptr()) };
-
-            let symbol = Symbol::new(name, base);
-
-            symbols.insert(name, symbol);
-        }
-
-        symbols
     }
 }
 
