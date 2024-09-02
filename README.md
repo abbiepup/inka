@@ -1,4 +1,6 @@
 # Inka
+> [!IMPORTANT]\
+> Volt is currently under development, and official releases have not been shipped yet.
 
 # Platforms
 |  **OS** | **x64** |
