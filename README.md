@@ -3,10 +3,12 @@
 > Volt is currently under development, and official releases have not been shipped yet.
 
 # Platforms
-|  **OS** | **x64** |
-|:-------:|:-------:|
-| Windows |   Yes   |
-|  Linux  | Planned |
+|        **Targets**       | **Status** |
+|:-------------------------|:----------:|
+| `x86_64-pc-windows-msvc` |     Yes    |
+| `x86_64-pc-windows-gnu`  |    Maybe   |    
+| `i686-pc-windows-msvc`   |    Maybe   |
+| `i686-pc-windows-gnu`    |    Maybe   |
 
 # Contributing
 See [`CONTRIBUTING.md`][CONTRIBUTING] for contributing to the project.
