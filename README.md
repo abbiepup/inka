@@ -7,8 +7,8 @@
 |:-------------------------|:----------:|
 | `x86_64-pc-windows-msvc` |     Yes    |
 | `x86_64-pc-windows-gnu`  |    Maybe   |    
-| `i686-pc-windows-msvc`   |    Maybe   |
-| `i686-pc-windows-gnu`    |    Maybe   |
+| `i686-pc-windows-msvc`   |    No      |
+| `i686-pc-windows-gnu`    |    No      |
 
 # Contributing
 See [`CONTRIBUTING.md`][CONTRIBUTING] for contributing to the project.
