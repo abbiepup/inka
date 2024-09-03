@@ -10,6 +10,13 @@ pub struct Base {
 }
 
 impl Base {
+    pub fn program() -> Self {
+        let raw_base = unsafe { GetModuleHandleW(PCWSTR::null()).unwrap_unchecked().0.cast() };
+
+        // SAFETY: todo!()
+        unsafe { Self::new_unchecked(raw_base) }
+    }
+
     #[inline]
     pub fn as_ptr(&self) -> *const u8 {
         self.ptr.as_ptr()
@@ -18,13 +25,6 @@ impl Base {
     #[inline]
     pub unsafe fn add(&self, count: usize) -> NonNull<u8> {
         unsafe { self.ptr.add(count) }
-    }
-
-    pub(crate) fn program() -> Self {
-        let raw_base = unsafe { GetModuleHandleW(PCWSTR::null()).unwrap_unchecked().0.cast() };
-
-        // SAFETY: todo!()
-        unsafe { Self::new_unchecked(raw_base) }
     }
 
     pub(crate) unsafe fn new_unchecked(ptr: *mut u8) -> Self {
