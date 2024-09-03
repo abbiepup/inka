@@ -10,6 +10,7 @@ use windows::Win32::System::SystemServices::IMAGE_DOS_HEADER;
 
 static PROGRAM: LazyLock<Program> = LazyLock::new(Program::init);
 
+#[inline]
 pub fn program() -> &'static Program {
     &PROGRAM
 }

@@ -7,9 +7,9 @@ use rayon::slice::ParallelSlice;
 
 #[derive(Debug)]
 pub struct Section {
-    pub(crate) name: &'static str,
-    pub(crate) base: Base,
-    pub(crate) len: usize,
+    name: &'static str,
+    base: Base,
+    len: usize,
 }
 
 impl Section {

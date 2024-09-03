@@ -1,6 +1,5 @@
-use core::fmt::{Formatter, Pointer, Result};
+use core::fmt::{Debug, Formatter, Pointer, Result};
 use core::ptr::NonNull;
-use std::fmt::Debug;
 use windows::core::PCWSTR;
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 
