@@ -4,7 +4,7 @@
 
 ## Contributing
 > [!IMPORTANT]\
-> Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you shall be dual licensed as [License](#license) mentioned, without any additional terms or conditions.
+> Any contribution intentionally submitted for inclusion in this project, shall comply with the Rust standard licensing model `MIT OR Apache 2.0` and therefore be dual licensed as described below, without any additional terms or conditions
 
 See [`CONTRIBUTING.md`][CONTRIBUTING] for contributing to the project.
 
