@@ -3,6 +3,9 @@
 > Inka is currently under development, and official releases have not been shipped yet.
 
 ## Platforms
+> [!IMPORTANT]\
+> This table will change once function hooking is added.
+
 |        **Targets**       | **Status** |
 |:-------------------------|:----------:|
 | `x86_64-pc-windows-msvc` |     Yes    |
