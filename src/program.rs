@@ -38,6 +38,7 @@ impl Program {
     /// Returns a slice containing the entire program.
     #[inline]
     pub fn as_slice(&self) -> &[u8] {
+        // SAFETY: todo!()
         unsafe { from_raw_parts(self.base.as_ptr(), self.len) }
     }
 
