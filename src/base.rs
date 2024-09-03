@@ -1,28 +1,45 @@
-use core::fmt::{Formatter, Pointer, Result};
+use core::fmt::{Debug, Formatter, Pointer, Result};
 use core::ptr::NonNull;
-use std::fmt::Debug;
+use windows::core::PCWSTR;
+use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 
-/// Thread-safe `Base` pointer
+/// Thread-safe `Base` pointer.
+#[repr(transparent)]
 #[derive(Clone, Copy)]
 pub struct Base {
-    pub(crate) ptr: NonNull<u8>,
+    ptr: NonNull<u8>,
 }
 
 impl Base {
-    #[inline]
-    pub fn as_ptr(&self) -> *const u8 {
-        self.ptr.as_ptr()
+    pub fn program() -> Self {
+        let raw_base = unsafe { GetModuleHandleW(PCWSTR::null()).unwrap_unchecked().0.cast() };
+
+        // SAFETY: `raw_base` is valid and non-null.
+        unsafe { Self::new_unchecked(NonNull::new_unchecked(raw_base)) }
     }
 
     #[inline]
-    pub unsafe fn add(&self, count: usize) -> NonNull<u8> {
+    /// # Safety
+    ///
+    ///
+    pub const unsafe fn add(&self, count: usize) -> NonNull<u8> {
+        // SAFETY: todo!()
         unsafe { self.ptr.add(count) }
     }
 
-    pub(crate) unsafe fn new_unchecked(ptr: *mut u8) -> Self {
-        Self {
-            ptr: unsafe { NonNull::new_unchecked(ptr) },
-        }
+    #[inline]
+    pub(crate) const fn as_nonnull(&self) -> NonNull<u8> {
+        self.ptr
+    }
+
+    /// Creates a new `Base`.
+    ///
+    /// # Safety
+    ///
+    /// `ptr` must be non-null.
+    #[inline]
+    pub(crate) const unsafe fn new_unchecked(ptr: NonNull<u8>) -> Self {
+        Self { ptr }
     }
 }
 

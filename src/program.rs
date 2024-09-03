@@ -1,18 +1,16 @@
-use crate::{Base, Section};
+use crate::{Base, Find, Section};
 use core::ops::Index;
 use core::ptr::NonNull;
 use core::slice::{from_raw_parts, SliceIndex};
+use core::str::from_utf8_unchecked;
+use pelite::pe::{Pe, PeView};
 use rayon::iter::IndexedParallelIterator;
 use rayon::slice::ParallelSlice;
 use std::sync::LazyLock;
-use windows::core::PCWSTR;
-use windows::Win32::System::Diagnostics::Debug::{IMAGE_NT_HEADERS64, IMAGE_SECTION_HEADER};
-use windows::Win32::System::LibraryLoader::GetModuleHandleW;
-use windows::Win32::System::SystemServices::IMAGE_DOS_HEADER;
 
-static PROGRAM: LazyLock<Program> = LazyLock::new(Program::init);
-
+#[inline]
 pub fn program() -> &'static Program {
+    static PROGRAM: LazyLock<Program> = LazyLock::new(Program::init);
     &PROGRAM
 }
 
@@ -24,23 +22,21 @@ pub struct Program {
 }
 
 impl Program {
-    /// Returns a raw pointer to this programs base.
     #[inline]
-    pub fn as_ptr(&self) -> *const u8 {
-        self.base.as_ptr()
+    pub fn base(&self) -> Base {
+        self.base
     }
 
-    /// Returns the length of this program in memory.
     #[inline]
     #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> usize {
         self.len
     }
 
-    /// Returns a slice containing the entire program.
     #[inline]
     pub fn as_slice(&self) -> &[u8] {
-        unsafe { from_raw_parts(self.base.as_ptr(), self.len) }
+        // SAFETY: todo!()
+        unsafe { from_raw_parts(self.base.as_nonnull().as_ptr(), self.len) }
     }
 
     pub fn contains(&self, pattern: &[u8]) -> bool {
@@ -55,54 +51,23 @@ impl Program {
         self.sections.iter().find(|section| section.name() == name)
     }
 
-    pub fn find(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
-        self.as_slice()
-            .par_windows(pattern.len())
-            .position_first(|window| window == pattern)
-            .map(|offset| unsafe { self.base.add(offset) })
-    }
-
-    pub fn rfind(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
-        self.as_slice()
-            .par_windows(pattern.len())
-            .position_last(|window| window == pattern)
-            .map(|offset| unsafe { self.base.add(offset) })
-    }
-
     fn init() -> Self {
-        let base = unsafe {
-            Base::new_unchecked(GetModuleHandleW(PCWSTR::null()).unwrap_unchecked().0.cast())
-        };
+        let base = Base::program();
+        let pe = unsafe { PeView::module(base.as_nonnull().as_ptr()) };
+        let len = pe.nt_headers().OptionalHeader.SizeOfImage as usize;
 
-        let dos_header = base.as_ptr() as *const IMAGE_DOS_HEADER;
-        let nt_headers64: &IMAGE_NT_HEADERS64 =
-            unsafe { &*(base.add((*dos_header).e_lfanew as usize).as_ptr().cast()) };
-
-        let len = nt_headers64.OptionalHeader.SizeOfImage as usize;
-
-        let section_header_ptr = unsafe {
-            (nt_headers64 as *const IMAGE_NT_HEADERS64).add(1) as *const IMAGE_SECTION_HEADER
-        };
-
-        let sections = (0..nt_headers64.FileHeader.NumberOfSections)
-            .map(|index| unsafe { &*section_header_ptr.add(index as usize) })
+        let sections = pe
+            .section_headers()
+            .iter()
             .map(|section| {
-                let name = {
-                    let raw_name = &section.Name;
-                    let name_len = raw_name
-                        .iter()
-                        .position(|&c| c == 0)
-                        .unwrap_or(raw_name.len());
+                let name = section
+                    .name()
+                    .unwrap_or(unsafe { from_utf8_unchecked(&section.Name) });
 
-                    unsafe { core::str::from_utf8_unchecked(&raw_name[..name_len]) }
-                };
+                let base =
+                    unsafe { Base::new_unchecked(base.add(section.VirtualAddress as usize)) };
 
-                let section_base =
-                    unsafe { Base::new_unchecked(section.VirtualAddress as *mut u8) };
-
-                Section::new(name, section_base, unsafe {
-                    section.Misc.VirtualSize as usize
-                })
+                Section::new(name, base, section.VirtualSize as usize)
             })
             .collect();
 
@@ -111,6 +76,26 @@ impl Program {
             len,
             sections,
         }
+    }
+}
+
+impl Find for Program {
+    fn find(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
+        assert!(!pattern.is_empty());
+
+        self.as_slice()
+            .par_windows(pattern.len())
+            .position_first(|window| window == pattern)
+            .map(|offset| unsafe { self.base.add(offset) })
+    }
+
+    fn rfind(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
+        assert!(!pattern.is_empty());
+
+        self.as_slice()
+            .par_windows(pattern.len())
+            .position_last(|window| window == pattern)
+            .map(|offset| unsafe { self.base.add(offset) })
     }
 }
 
