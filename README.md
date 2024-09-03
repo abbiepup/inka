@@ -14,6 +14,9 @@
 | `i686-pc-windows-gnu`    |    No      |
 
 ## Contributing
+> [!IMPORTANT]\
+> Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you shall be dual licensed as [License](#license) mentioned, without any additional terms or conditions.
+
 See [`CONTRIBUTING.md`][CONTRIBUTING] for contributing to the project.
 
 ## License
