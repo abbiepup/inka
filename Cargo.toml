@@ -2,7 +2,12 @@
 name = "inka"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.80.0"
+authors = ["KiraCoding"]
 license = "MIT OR Apache-2.0"
+categories = ["os", "os::windows-apis"]
+keywords = ["hacking", "gamehacking"]
+description = "todo"
 
 [dependencies]
 rayon = "1.10.0"
