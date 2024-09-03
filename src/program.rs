@@ -5,9 +5,7 @@ use core::slice::{from_raw_parts, SliceIndex};
 use rayon::iter::IndexedParallelIterator;
 use rayon::slice::ParallelSlice;
 use std::sync::LazyLock;
-use windows::core::PCWSTR;
 use windows::Win32::System::Diagnostics::Debug::{IMAGE_NT_HEADERS64, IMAGE_SECTION_HEADER};
-use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::System::SystemServices::IMAGE_DOS_HEADER;
 
 static PROGRAM: LazyLock<Program> = LazyLock::new(Program::init);
@@ -70,9 +68,7 @@ impl Program {
     }
 
     fn init() -> Self {
-        let base = unsafe {
-            Base::new_unchecked(GetModuleHandleW(PCWSTR::null()).unwrap_unchecked().0.cast())
-        };
+        let base = Base::program();
 
         let dos_header = base.as_ptr() as *const IMAGE_DOS_HEADER;
         let nt_headers64: &IMAGE_NT_HEADERS64 =

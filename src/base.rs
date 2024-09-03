@@ -1,6 +1,8 @@
 use core::fmt::{Formatter, Pointer, Result};
 use core::ptr::NonNull;
 use std::fmt::Debug;
+use windows::core::PCWSTR;
+use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 
 /// Thread-safe `Base` pointer
 #[derive(Clone, Copy)]
@@ -19,10 +21,18 @@ impl Base {
         unsafe { self.ptr.add(count) }
     }
 
+    pub(crate) fn program() -> Self {
+        let raw_base = unsafe { GetModuleHandleW(PCWSTR::null()).unwrap_unchecked().0.cast() };
+
+        // SAFETY: todo!()
+        unsafe { Self::new_unchecked(raw_base) }
+    }
+
     pub(crate) unsafe fn new_unchecked(ptr: *mut u8) -> Self {
-        Self {
-            ptr: unsafe { NonNull::new_unchecked(ptr) },
-        }
+        // SAFETY: todo!()
+        let ptr = unsafe { NonNull::new_unchecked(ptr) };
+
+        Self { ptr }
     }
 }
 
