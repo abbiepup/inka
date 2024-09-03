@@ -6,7 +6,7 @@ rust-version = "1.80.0"
 authors = ["KiraCoding"]
 license = "MIT OR Apache-2.0"
 categories = ["os", "os::windows-apis"]
-keywords = ["hacking", "gamehacking"]
+keywords = ["gamehacking"]
 description = "todo"
 
 [dependencies]
