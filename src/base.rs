@@ -4,6 +4,7 @@ use windows::core::PCWSTR;
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 
 /// Thread-safe `Base` pointer
+#[repr(transparent)]
 #[derive(Clone, Copy)]
 pub struct Base {
     pub(crate) ptr: NonNull<u8>,

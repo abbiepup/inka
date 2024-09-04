@@ -2,6 +2,7 @@ use crate::{Base, Section};
 use core::ops::Index;
 use core::ptr::NonNull;
 use core::slice::{from_raw_parts, SliceIndex};
+use core::str::from_utf8_unchecked;
 use rayon::iter::IndexedParallelIterator;
 use rayon::slice::ParallelSlice;
 use std::sync::LazyLock;
@@ -86,21 +87,22 @@ impl Program {
             .map(|index| unsafe { &*section_header_ptr.add(index as usize) })
             .map(|section| {
                 let name = {
-                    let raw_name = &section.Name;
-                    let name_len = raw_name
+                    let name_len = section
+                        .Name
                         .iter()
-                        .position(|&c| c == 0)
-                        .unwrap_or(raw_name.len());
+                        .position(|&char| char == 0)
+                        .unwrap_or(section.Name.len());
 
-                    unsafe { core::str::from_utf8_unchecked(&raw_name[..name_len]) }
+                    unsafe { from_utf8_unchecked(&section.Name[..name_len]) }
                 };
 
-                let section_base =
-                    unsafe { Base::new_unchecked(section.VirtualAddress as *mut u8) };
+                let section_base = unsafe {
+                    Base::new_unchecked(base.add(section.VirtualAddress as usize).as_ptr().cast())
+                };
 
-                Section::new(name, section_base, unsafe {
-                    section.Misc.VirtualSize as usize
-                })
+                let len = unsafe { section.Misc.VirtualSize as usize };
+
+                Section::new(name, section_base, len)
             })
             .collect();
 

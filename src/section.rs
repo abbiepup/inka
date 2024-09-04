@@ -18,15 +18,12 @@ impl Section {
         self.name
     }
 
-    pub unsafe fn add(&self, count: usize) -> NonNull<u8> {
-        unsafe { self.base.add(count) }
-    }
-
     #[inline]
     pub fn as_ptr(&self) -> *const u8 {
         self.base.as_ptr()
     }
 
+    /// Returns the length of this section.
     #[inline]
     #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> usize {
