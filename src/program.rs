@@ -11,11 +11,14 @@ use windows::Win32::System::SystemServices::IMAGE_DOS_HEADER;
 
 static PROGRAM: LazyLock<Program> = LazyLock::new(Program::init);
 
+/// Returns a reference to the global [`Program`] instance.
 #[inline]
 pub fn program() -> &'static Program {
     &PROGRAM
 }
 
+/// Represents the program's in-memory layout, providing access to its base address, size,
+/// and sections.
 #[derive(Debug)]
 pub struct Program {
     base: Base,
