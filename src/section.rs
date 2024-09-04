@@ -1,7 +1,7 @@
 use crate::Base;
+use core::ops::Index;
 use core::ptr::NonNull;
 use core::slice::{from_raw_parts, SliceIndex};
-use core::ops::Index;
 use rayon::iter::IndexedParallelIterator;
 use rayon::slice::ParallelSlice;
 
@@ -34,7 +34,7 @@ impl Section {
 
     #[inline]
     pub fn as_slice(&self) -> &[u8] {
-        unsafe { from_raw_parts(self.base.as_ptr(), self.len) }
+        unsafe { from_raw_parts(self.base.as_ptr().as_ptr(), self.len) }
     }
 
     pub fn contains(&self, pattern: &[u8]) -> bool {

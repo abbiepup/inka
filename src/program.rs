@@ -44,15 +44,15 @@ impl Program {
     #[inline]
     pub fn as_slice(&self) -> &[u8] {
         // SAFETY: todo!()
-        unsafe { from_raw_parts(self.base.as_ptr(), self.len) }
+        unsafe { from_raw_parts(self.base.as_ptr().as_ptr(), self.len) }
     }
 
     /// Returns `true` if the program contains the byte pattern.
-    /// 
+    ///
     /// # Examples
     /// ```
     /// use inka::program;
-    /// 
+    ///
     /// let result = program().contains(&[0]);
     /// assert!(result);
     /// ```
@@ -71,15 +71,33 @@ impl Program {
     /// Returns the pointer of the first byte that matches the byte pattern.
     ///
     /// Returns [`None`] if the pattern doesn’t match.
-    /// 
+    ///
     /// # Examples
     /// ```
     /// use inka::program;
-    /// 
-    /// program().find(&[0]);
+    ///
+    /// let data = &[
+    ///     0x7c, 0x73, 0xe1, 0x3d,
+    ///     0x1a, 0x7d, 0xb3, 0x00,
+    ///     0xd2, 0x6c, 0x61, 0xf9,
+    ///     0x5f, 0x00, 0xf1, 0x10,
+    ///     0x80, 0x5e, 0x5f, 0xbf,
+    /// ];
+    ///
+    /// let pattern = &[
+    ///                 0x7c, 0x73, 0xe1, 0x3d,
+    ///                 0x1a, 0x7d, 0xb3, 0x00,
+    ///                 0xd2,
+    ///              ];
+    ///
+    /// let ptr = program()
+    ///             .find(pattern)
+    ///             .unwrap();
+    ///
+    /// assert_eq!(data.as_ptr(), ptr.as_ptr());
     /// ```
     pub fn find(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
-        debug_assert!(pattern.len() >= 1);
+        assert!(pattern.len() >= 1);
 
         self.as_slice()
             .par_windows(pattern.len())
@@ -88,17 +106,17 @@ impl Program {
     }
 
     /// Returns the pointer of the first byte of the last match of the pattern.
-    /// 
+    ///
     /// Returns [`None`] if the pattern doesn’t match.
-    /// 
+    ///
     /// # Examples
     /// ```
     /// use inka::program;
-    /// 
+    ///
     /// program().rfind(&[0]);
     /// ```
     pub fn rfind(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
-        debug_assert!(pattern.len() >= 1);
+        assert!(pattern.len() >= 1);
 
         self.as_slice()
             .par_windows(pattern.len())
@@ -109,7 +127,7 @@ impl Program {
     fn init() -> Self {
         let base = Base::program();
 
-        let dos_header = base.as_ptr() as *const IMAGE_DOS_HEADER;
+        let dos_header = base.as_ptr().as_ptr() as *const IMAGE_DOS_HEADER;
         let nt_headers64: &IMAGE_NT_HEADERS64 =
             unsafe { &*(base.add((*dos_header).e_lfanew as usize).as_ptr().cast()) };
 
