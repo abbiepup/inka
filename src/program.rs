@@ -24,10 +24,10 @@ pub struct Program {
 }
 
 impl Program {
-    /// Returns a raw pointer to this programs base.
+    /// Returns a base pointer of this program in memory.
     #[inline]
-    pub fn as_ptr(&self) -> *const u8 {
-        self.base.as_ptr()
+    pub fn base(&self) -> Base {
+        self.base
     }
 
     /// Returns the length of this program in memory.

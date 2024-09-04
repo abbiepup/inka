@@ -1,4 +1,4 @@
-//! pog
+//! Inka
 
 mod base;
 mod program;
