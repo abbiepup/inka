@@ -17,7 +17,7 @@ pub fn program() -> &'static Program {
     &PROGRAM
 }
 
-/// Represents the program's in-memory layout, providing access to its base address, size,
+/// Represents the `Program`'s in-memory layout, providing access to its base address, size,
 /// and sections.
 #[derive(Debug)]
 pub struct Program {

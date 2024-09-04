@@ -5,6 +5,7 @@ use core::ops::Index;
 use rayon::iter::IndexedParallelIterator;
 use rayon::slice::ParallelSlice;
 
+/// Represents a `Section` of the program in memory, providing access to its name, base address, and length.
 #[derive(Debug)]
 pub struct Section {
     name: &'static str,
@@ -18,9 +19,10 @@ impl Section {
         self.name
     }
 
+    /// Returns a base pointer of this section.
     #[inline]
-    pub fn as_ptr(&self) -> *const u8 {
-        self.base.as_ptr()
+    pub fn base(&self) -> Base {
+        self.base
     }
 
     /// Returns the length of this section.
