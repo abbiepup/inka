@@ -44,6 +44,15 @@ impl Program {
         unsafe { from_raw_parts(self.base.as_ptr(), self.len) }
     }
 
+    /// Returns `true` if the program contains the byte pattern.
+    /// 
+    /// # Examples
+    /// ```
+    /// use inka::program;
+    /// 
+    /// let result = program().contains(&[0]);
+    /// assert!(result);
+    /// ```
     pub fn contains(&self, pattern: &[u8]) -> bool {
         self.find(pattern).is_some()
     }
@@ -56,14 +65,38 @@ impl Program {
         self.sections.iter().find(|section| section.name() == name)
     }
 
+    /// Returns the pointer of the first byte that matches the byte pattern.
+    ///
+    /// Returns [`None`] if the pattern doesn’t match.
+    /// 
+    /// # Examples
+    /// ```
+    /// use inka::program;
+    /// 
+    /// program().find(&[0]);
+    /// ```
     pub fn find(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
+        debug_assert!(pattern.len() >= 1);
+
         self.as_slice()
             .par_windows(pattern.len())
             .position_first(|window| window == pattern)
             .map(|offset| unsafe { self.base.add(offset) })
     }
 
+    /// Returns the pointer of the first byte of the last match of the pattern.
+    /// 
+    /// Returns [`None`] if the pattern doesn’t match.
+    /// 
+    /// # Examples
+    /// ```
+    /// use inka::program;
+    /// 
+    /// program().rfind(&[0]);
+    /// ```
     pub fn rfind(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
+        debug_assert!(pattern.len() >= 1);
+
         self.as_slice()
             .par_windows(pattern.len())
             .position_last(|window| window == pattern)
