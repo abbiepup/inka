@@ -85,10 +85,10 @@ impl Program {
     /// ];
     ///
     /// let pattern = &[
-    ///                 0x7c, 0x73, 0xe1, 0x3d,
-    ///                 0x1a, 0x7d, 0xb3, 0x00,
-    ///                 0xd2,
-    ///              ];
+    ///     0x7c, 0x73, 0xe1, 0x3d,
+    ///     0x1a, 0x7d, 0xb3, 0x00,
+    ///     0xd2,
+    /// ];
     ///
     /// let ptr = program()
     ///             .find(pattern)
@@ -110,10 +110,29 @@ impl Program {
     /// Returns [`None`] if the pattern doesn’t match.
     ///
     /// # Examples
+    /// 
     /// ```
     /// use inka::program;
     ///
-    /// program().rfind(&[0]);
+    /// let data = &[
+    ///     0x7c, 0x73, 0xe1, 0x3d,
+    ///     0x1a, 0x7d, 0xb3, 0x00,
+    ///     0xd2, 0x6c, 0x61, 0xf9,
+    ///     0x5f, 0x00, 0xf1, 0x10,
+    ///     0x80, 0x5e, 0x5f, 0xbf,
+    /// ];
+    /// 
+    /// let pattern = &[
+    ///     0x7c, 0x73, 0xe1, 0x3d,
+    ///     0x1a, 0x7d, 0xb3, 0x00,
+    ///     0xd2,
+    /// ];
+    /// 
+    /// let ptr = program()
+    ///             .rfind(pattern)
+    ///             .unwrap();
+    ///
+    /// assert_eq!(data.as_ptr(), ptr.as_ptr());
     /// ```
     pub fn rfind(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
         assert!(pattern.len() >= 1);
