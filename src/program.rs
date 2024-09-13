@@ -96,7 +96,7 @@ impl Program {
     /// assert_eq!(data.as_ptr(), ptr.as_ptr());
     /// ```
     pub fn find(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
-        assert!(pattern.len() >= 1);
+        assert!(!pattern.is_empty());
 
         self.as_slice()
             .par_windows(pattern.len())
@@ -134,7 +134,7 @@ impl Program {
     /// assert_eq!(data.as_ptr(), ptr.as_ptr());
     /// ```
     pub fn rfind(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
-        assert!(pattern.len() >= 1);
+        assert!(!pattern.is_empty());
 
         self.as_slice()
             .par_windows(pattern.len())

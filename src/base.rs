@@ -19,7 +19,11 @@ impl Base {
     }
 
     #[inline]
+    /// # Safety
+    /// 
+    /// 
     pub const unsafe fn add(&self, count: usize) -> NonNull<u8> {
+        // SAFETY: todo!()
         unsafe { self.ptr.add(count) }
     }
 

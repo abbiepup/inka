@@ -38,13 +38,13 @@ impl Section {
     }
 
     pub fn contains(&self, pattern: &[u8]) -> bool {
-        assert!(pattern.len() >= 1);
+        assert!(!pattern.is_empty());
 
         self.find(pattern).is_some()
     }
 
     pub fn find(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
-        assert!(pattern.len() >= 1);
+        assert!(!pattern.is_empty());
 
         self.as_slice()
             .par_windows(pattern.len())
@@ -53,7 +53,7 @@ impl Section {
     }
 
     pub fn rfind(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
-        assert!(pattern.len() >= 1);
+        assert!(!pattern.is_empty());
 
         self.as_slice()
             .par_windows(pattern.len())
