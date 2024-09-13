@@ -1,4 +1,4 @@
-use crate::Base;
+use crate::{Base, Name};
 use core::ops::Index;
 use core::ptr::NonNull;
 use core::slice::{from_raw_parts, SliceIndex};
@@ -8,7 +8,7 @@ use rayon::slice::ParallelSlice;
 /// Represents a `Section` of the program in memory, providing access to its name, base address, and length.
 #[derive(Debug)]
 pub struct Section {
-    name: &'static str,
+    name: Name,
     base: Base,
     len: usize,
 }

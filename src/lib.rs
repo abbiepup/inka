@@ -1,9 +1,13 @@
 //! # Inka
 
 mod base;
+mod header;
 mod program;
 mod section;
 
 pub use base::Base;
+pub use header::Header;
 pub use program::{program, Program};
 pub use section::Section;
+ 
+pub type Name = &'static str;
