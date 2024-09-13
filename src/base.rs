@@ -15,13 +15,13 @@ impl Base {
         let raw_base = unsafe { GetModuleHandleW(PCWSTR::null()).unwrap_unchecked().0.cast() };
 
         // SAFETY: `raw_base` is valid and non-null.
-        unsafe { Self::new_unchecked(raw_base) }
+        unsafe { Self::new_unchecked(NonNull::new_unchecked(raw_base)) }
     }
 
     #[inline]
     /// # Safety
-    /// 
-    /// 
+    ///
+    ///
     pub const unsafe fn add(&self, count: usize) -> NonNull<u8> {
         // SAFETY: todo!()
         unsafe { self.ptr.add(count) }
@@ -38,10 +38,7 @@ impl Base {
     ///
     /// `ptr` must be non-null.
     #[inline]
-    pub(crate) const unsafe fn new_unchecked(ptr: *mut u8) -> Self {
-        // SAFETY: Caller ensures that `ptr` is non-null.
-        let ptr = unsafe { NonNull::new_unchecked(ptr) };
-
+    pub(crate) const unsafe fn new_unchecked(ptr: NonNull<u8>) -> Self {
         Self { ptr }
     }
 }

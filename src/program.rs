@@ -154,13 +154,10 @@ impl Program {
                     .name()
                     .unwrap_or(unsafe { from_utf8_unchecked(&section.Name) });
 
-                let base = unsafe {
-                    Base::new_unchecked(base.add(section.VirtualAddress as usize).as_ptr().cast())
-                };
+                let base =
+                    unsafe { Base::new_unchecked(base.add(section.VirtualAddress as usize)) };
 
-                let len = section.VirtualSize as usize;
-
-                Section::new(name, base, len)
+                Section::new(name, base, section.VirtualSize as usize)
             })
             .collect();
 
