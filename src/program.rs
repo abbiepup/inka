@@ -144,9 +144,7 @@ impl Program {
 
     fn init() -> Self {
         let base = Base::program();
-
         let pe = unsafe { PeView::module(base.as_nonnull().as_ptr()) };
-
         let len = pe.nt_headers().OptionalHeader.SizeOfImage as usize;
 
         let sections = pe
