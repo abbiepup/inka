@@ -8,11 +8,10 @@ use rayon::iter::IndexedParallelIterator;
 use rayon::slice::ParallelSlice;
 use std::sync::LazyLock;
 
-static PROGRAM: LazyLock<Program> = LazyLock::new(Program::init);
-
 /// Returns a reference to the global [`Program`] instance.
 #[inline]
 pub fn program() -> &'static Program {
+    static PROGRAM: LazyLock<Program> = LazyLock::new(Program::init);
     &PROGRAM
 }
 
