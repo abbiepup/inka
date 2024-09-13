@@ -61,6 +61,7 @@ impl Section {
             .map(|offset| unsafe { self.base.add(offset) })
     }
 
+    #[inline]
     pub(crate) fn new(name: &'static str, base: Base, len: usize) -> Self {
         Self { name, base, len }
     }
