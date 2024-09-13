@@ -145,34 +145,32 @@ impl Program {
     fn init() -> Self {
         let base = Base::program();
 
-        {
-            let pe = unsafe { PeView::module(base.as_nonnull().as_ptr()) };
+        let pe = unsafe { PeView::module(base.as_nonnull().as_ptr()) };
 
-            let len = pe.nt_headers().OptionalHeader.SizeOfImage as usize;
+        let len = pe.nt_headers().OptionalHeader.SizeOfImage as usize;
 
-            let sections = pe
-                .section_headers()
-                .iter()
-                .map(|section| {
-                    let name = section.name().unwrap();
+        let sections = pe
+            .section_headers()
+            .iter()
+            .map(|section| {
+                let name = section
+                    .name()
+                    .unwrap_or(unsafe { from_utf8_unchecked(&section.Name) });
 
-                    let base = unsafe {
-                        Base::new_unchecked(
-                            base.add(section.VirtualAddress as usize).as_ptr().cast(),
-                        )
-                    };
+                let base = unsafe {
+                    Base::new_unchecked(base.add(section.VirtualAddress as usize).as_ptr().cast())
+                };
 
-                    let len = section.VirtualSize as usize;
+                let len = section.VirtualSize as usize;
 
-                    Section::new(name, base, len)
-                })
-                .collect();
+                Section::new(name, base, len)
+            })
+            .collect();
 
-            Self {
-                base,
-                len,
-                sections,
-            }
+        Self {
+            base,
+            len,
+            sections,
         }
     }
 }
