@@ -34,7 +34,7 @@ impl Section {
 
     #[inline]
     pub fn as_slice(&self) -> &[u8] {
-        unsafe { from_raw_parts(self.base.as_ptr().as_ptr(), self.len) }
+        unsafe { from_raw_parts(self.base.as_nonnull().as_ptr(), self.len) }
     }
 
     pub fn contains(&self, pattern: &[u8]) -> bool {

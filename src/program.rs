@@ -3,11 +3,10 @@ use core::ops::Index;
 use core::ptr::NonNull;
 use core::slice::{from_raw_parts, SliceIndex};
 use core::str::from_utf8_unchecked;
+use pelite::pe::{Pe, PeView};
 use rayon::iter::IndexedParallelIterator;
 use rayon::slice::ParallelSlice;
 use std::sync::LazyLock;
-use windows::Win32::System::Diagnostics::Debug::{IMAGE_NT_HEADERS64, IMAGE_SECTION_HEADER};
-use windows::Win32::System::SystemServices::IMAGE_DOS_HEADER;
 
 static PROGRAM: LazyLock<Program> = LazyLock::new(Program::init);
 
@@ -44,7 +43,7 @@ impl Program {
     #[inline]
     pub fn as_slice(&self) -> &[u8] {
         // SAFETY: todo!()
-        unsafe { from_raw_parts(self.base.as_ptr().as_ptr(), self.len) }
+        unsafe { from_raw_parts(self.base.as_nonnull().as_ptr(), self.len) }
     }
 
     /// Returns `true` if the program contains the byte pattern.
@@ -110,7 +109,7 @@ impl Program {
     /// Returns [`None`] if the pattern doesn’t match.
     ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use inka::program;
     ///
@@ -121,13 +120,13 @@ impl Program {
     ///     0x5f, 0x00, 0xf1, 0x10,
     ///     0x80, 0x5e, 0x5f, 0xbf,
     /// ];
-    /// 
+    ///
     /// let pattern = &[
     ///     0x7c, 0x73, 0xe1, 0x3d,
     ///     0x1a, 0x7d, 0xb3, 0x00,
     ///     0xd2,
     /// ];
-    /// 
+    ///
     /// let ptr = program()
     ///             .rfind(pattern)
     ///             .unwrap();
@@ -146,43 +145,34 @@ impl Program {
     fn init() -> Self {
         let base = Base::program();
 
-        let dos_header = base.as_ptr().as_ptr() as *const IMAGE_DOS_HEADER;
-        let nt_headers64: &IMAGE_NT_HEADERS64 =
-            unsafe { &*(base.add((*dos_header).e_lfanew as usize).as_ptr().cast()) };
+        {
+            let pe = unsafe { PeView::module(base.as_nonnull().as_ptr()) };
 
-        let len = nt_headers64.OptionalHeader.SizeOfImage as usize;
+            let len = pe.nt_headers().OptionalHeader.SizeOfImage as usize;
 
-        let section_header_ptr = unsafe {
-            (nt_headers64 as *const IMAGE_NT_HEADERS64).add(1) as *const IMAGE_SECTION_HEADER
-        };
+            let sections = pe
+                .section_headers()
+                .iter()
+                .map(|section| {
+                    let name = section.name().unwrap();
 
-        let sections = (0..nt_headers64.FileHeader.NumberOfSections)
-            .map(|index| unsafe { &*section_header_ptr.add(index as usize) })
-            .map(|section| {
-                let name = {
-                    let name_len = section
-                        .Name
-                        .iter()
-                        .position(|&char| char == 0)
-                        .unwrap_or(section.Name.len());
+                    let base = unsafe {
+                        Base::new_unchecked(
+                            base.add(section.VirtualAddress as usize).as_ptr().cast(),
+                        )
+                    };
 
-                    unsafe { from_utf8_unchecked(&section.Name[..name_len]) }
-                };
+                    let len = section.VirtualSize as usize;
 
-                let section_base = unsafe {
-                    Base::new_unchecked(base.add(section.VirtualAddress as usize).as_ptr().cast())
-                };
+                    Section::new(name, base, len)
+                })
+                .collect();
 
-                let len = unsafe { section.Misc.VirtualSize as usize };
-
-                Section::new(name, section_base, len)
-            })
-            .collect();
-
-        Self {
-            base,
-            len,
-            sections,
+            Self {
+                base,
+                len,
+                sections,
+            }
         }
     }
 }

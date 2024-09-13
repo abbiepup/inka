@@ -12,6 +12,9 @@ description = "todo"
 [dependencies]
 rayon = "1.10.0"
 
+[target.'cfg(windows)'.dependencies.pelite]
+version = "0.10.0"
+
 [target.'cfg(windows)'.dependencies.windows]
 version = "0.58.0"
 features = [
