@@ -1,11 +1,10 @@
-use crate::{Base, Name};
+use crate::{Base, Find, Name};
 use core::ops::Index;
 use core::ptr::NonNull;
 use core::slice::{from_raw_parts, SliceIndex};
 use rayon::iter::IndexedParallelIterator;
 use rayon::slice::ParallelSlice;
 
-/// Represents a `Section` of the program in memory, providing access to its name, base address, and length.
 #[derive(Debug)]
 pub struct Section {
     name: Name,
@@ -19,13 +18,11 @@ impl Section {
         self.name
     }
 
-    /// Returns a base pointer of this section.
     #[inline]
     pub fn base(&self) -> Base {
         self.base
     }
 
-    /// Returns the length of this section.
     #[inline]
     #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> usize {
@@ -43,7 +40,14 @@ impl Section {
         self.find(pattern).is_some()
     }
 
-    pub fn find(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
+    #[inline]
+    pub(crate) fn new(name: &'static str, base: Base, len: usize) -> Self {
+        Self { name, base, len }
+    }
+}
+
+impl Find for Section {
+    fn find(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
         assert!(!pattern.is_empty());
 
         self.as_slice()
@@ -52,18 +56,13 @@ impl Section {
             .map(|offset| unsafe { self.base.add(offset) })
     }
 
-    pub fn rfind(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
+    fn rfind(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
         assert!(!pattern.is_empty());
 
         self.as_slice()
             .par_windows(pattern.len())
             .position_last(|window| window == pattern)
             .map(|offset| unsafe { self.base.add(offset) })
-    }
-
-    #[inline]
-    pub(crate) fn new(name: &'static str, base: Base, len: usize) -> Self {
-        Self { name, base, len }
     }
 }
 

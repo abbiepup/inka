@@ -1,4 +1,4 @@
-use crate::{Base, Section};
+use crate::{Base, Find, Section};
 use core::ops::Index;
 use core::ptr::NonNull;
 use core::slice::{from_raw_parts, SliceIndex};
@@ -8,15 +8,12 @@ use rayon::iter::IndexedParallelIterator;
 use rayon::slice::ParallelSlice;
 use std::sync::LazyLock;
 
-/// Returns a reference to the global [`Program`] instance.
 #[inline]
 pub fn program() -> &'static Program {
     static PROGRAM: LazyLock<Program> = LazyLock::new(Program::init);
     &PROGRAM
 }
 
-/// Represents the `Program`'s in-memory layout, providing access to its base address, size,
-/// and sections.
 #[derive(Debug)]
 pub struct Program {
     base: Base,
@@ -25,35 +22,23 @@ pub struct Program {
 }
 
 impl Program {
-    /// Returns a base pointer of this program in memory.
     #[inline]
     pub fn base(&self) -> Base {
         self.base
     }
 
-    /// Returns the length of this program in memory.
     #[inline]
     #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> usize {
         self.len
     }
 
-    /// Returns a slice containing the entire program.
     #[inline]
     pub fn as_slice(&self) -> &[u8] {
         // SAFETY: todo!()
         unsafe { from_raw_parts(self.base.as_nonnull().as_ptr(), self.len) }
     }
 
-    /// Returns `true` if the program contains the byte pattern.
-    ///
-    /// # Examples
-    /// ```
-    /// use inka::program;
-    ///
-    /// let result = program().contains(&[0]);
-    /// assert!(result);
-    /// ```
     pub fn contains(&self, pattern: &[u8]) -> bool {
         self.find(pattern).is_some()
     }
@@ -64,81 +49,6 @@ impl Program {
 
     pub fn get_section(&self, name: &str) -> Option<&Section> {
         self.sections.iter().find(|section| section.name() == name)
-    }
-
-    /// Returns the pointer of the first byte that matches the byte pattern.
-    ///
-    /// Returns [`None`] if the pattern doesn’t match.
-    ///
-    /// # Examples
-    /// ```
-    /// use inka::program;
-    ///
-    /// let data = &[
-    ///     0x7c, 0x73, 0xe1, 0x3d,
-    ///     0x1a, 0x7d, 0xb3, 0x00,
-    ///     0xd2, 0x6c, 0x61, 0xf9,
-    ///     0x5f, 0x00, 0xf1, 0x10,
-    ///     0x80, 0x5e, 0x5f, 0xbf,
-    /// ];
-    ///
-    /// let pattern = &[
-    ///     0x7c, 0x73, 0xe1, 0x3d,
-    ///     0x1a, 0x7d, 0xb3, 0x00,
-    ///     0xd2,
-    /// ];
-    ///
-    /// let ptr = program()
-    ///             .find(pattern)
-    ///             .unwrap();
-    ///
-    /// assert_eq!(data.as_ptr(), ptr.as_ptr());
-    /// ```
-    pub fn find(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
-        assert!(!pattern.is_empty());
-
-        self.as_slice()
-            .par_windows(pattern.len())
-            .position_first(|window| window == pattern)
-            .map(|offset| unsafe { self.base.add(offset) })
-    }
-
-    /// Returns the pointer of the first byte of the last match of the pattern.
-    ///
-    /// Returns [`None`] if the pattern doesn’t match.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use inka::program;
-    ///
-    /// let data = &[
-    ///     0x7c, 0x73, 0xe1, 0x3d,
-    ///     0x1a, 0x7d, 0xb3, 0x00,
-    ///     0xd2, 0x6c, 0x61, 0xf9,
-    ///     0x5f, 0x00, 0xf1, 0x10,
-    ///     0x80, 0x5e, 0x5f, 0xbf,
-    /// ];
-    ///
-    /// let pattern = &[
-    ///     0x7c, 0x73, 0xe1, 0x3d,
-    ///     0x1a, 0x7d, 0xb3, 0x00,
-    ///     0xd2,
-    /// ];
-    ///
-    /// let ptr = program()
-    ///             .rfind(pattern)
-    ///             .unwrap();
-    ///
-    /// assert_eq!(data.as_ptr(), ptr.as_ptr());
-    /// ```
-    pub fn rfind(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
-        assert!(!pattern.is_empty());
-
-        self.as_slice()
-            .par_windows(pattern.len())
-            .position_last(|window| window == pattern)
-            .map(|offset| unsafe { self.base.add(offset) })
     }
 
     fn init() -> Self {
@@ -166,6 +76,26 @@ impl Program {
             len,
             sections,
         }
+    }
+}
+
+impl Find for Program {
+    fn find(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
+        assert!(!pattern.is_empty());
+
+        self.as_slice()
+            .par_windows(pattern.len())
+            .position_first(|window| window == pattern)
+            .map(|offset| unsafe { self.base.add(offset) })
+    }
+
+    fn rfind(&self, pattern: &[u8]) -> Option<NonNull<u8>> {
+        assert!(!pattern.is_empty());
+
+        self.as_slice()
+            .par_windows(pattern.len())
+            .position_last(|window| window == pattern)
+            .map(|offset| unsafe { self.base.add(offset) })
     }
 }
 
