@@ -11,6 +11,7 @@ description = "todo"
 
 [dependencies]
 rayon = "1.10.0"
+sharded-slab = "0.1.7"
 
 [target.'cfg(windows)'.dependencies.pelite]
 version = "0.10.0"
