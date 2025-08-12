@@ -8,6 +8,29 @@ pub struct Symbol {
 
 impl Symbol {
     pub fn demangle(&self) -> String {
-        todo!()
+        if self.name.starts_with("_Z") {
+            // Itanium C++
+            todo!()
+        } else if self.name.starts_with("?") {
+            // MSVC
+            todo!()
+        } else if self.name.starts_with("_R") {
+            // Rust
+            todo!()
+        } else {
+            self.name.to_string()
+        }
     }
+}
+
+pub enum Kind {
+    Cpp(Abi),
+    Rust,
+    Swift,
+    Unknown,
+}
+
+pub enum Abi {
+    Itanium,
+    Msvc,
 }

@@ -1,9 +1,8 @@
 [package]
 name = "inka"
 version = "0.1.0"
-edition = "2021"
-rust-version = "1.80.0"
-authors = ["KiraCoding"]
+edition = "2024"
+authors = ["Abbie <abbiepup@proton.me>"]
 license = "MIT OR Apache-2.0"
 categories = ["os", "os::windows-apis"]
 keywords = ["gamehacking"]
